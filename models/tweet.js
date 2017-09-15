@@ -1,16 +1,10 @@
-module.exports = (dbHandle, args, resolve)=> {
-    const newTweet = new Tweet(args.tweet);
-    dbHandle.collection('tweets').insert(newTweet, (result)=>{
-        resolve(result);
-        dbHandle.close();
-    })
+const createModel = require('./createModel');
+
+
+module.exports = (data)=> {
+    const tweetModel = createModel('tweet'),
+          newTweet = new tweetModel(data);
+
+    return newTweet.save()
 }
 
-class Tweet{
-    constructor(tweet){
-       this.text = tweet.text,
-       this.userId = tweet.user,
-       this.timeStamp = tweet.timeStamp
-
-    }
-}

@@ -24,7 +24,7 @@ const app= http.createServer((request, response)=> {
     })
 
     request.on('end', ()=>{
-        data = Buffer.concat(data).toString();
+        data = JSON.parse( Buffer.concat(data).toString() );
         console.log(data);
 
         switch(parsedURL){
@@ -44,15 +44,24 @@ const app= http.createServer((request, response)=> {
                 }
             break;
             case 'addTweet':
-                dbConnect(tweetMaker, {tweet: data})
-                .then(()=>{
-                    response.statusCode='200';
-                    response.setHeader('Content-Type', 'text/plain');
-                    response.end('Tweet Added')
-                })
-                .catch((error)=>{
-                    console.log(error);
-                })
+                 tweetMaker(data)
+                 .then((result)=>{
+                     response.statusCode='200';
+                     response.setHeader('Content-Type', 'text/plain');
+                     response.end('Tweet Added')
+                 })
+                 .catch((error)=>{
+                     console.log(error);
+                 });
+                // dbConnect(tweetMaker, {tweet: data})
+                // .then(()=>{
+                //     response.statusCode='200';
+                //     response.setHeader('Content-Type', 'text/plain');
+                //     response.end('Tweet Added')
+                // })
+                // .catch((error)=>{
+                //     console.log(error);
+                // })
                
             break;
     
