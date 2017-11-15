@@ -13,7 +13,6 @@ module.exports = {
         return tweets.delete(filters)
     },
     update: (filter, update)=>{
-        console.log(update)
         return tweets.update(filter, update)
     }
 }

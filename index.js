@@ -4,21 +4,21 @@ const dbConnect = require('./dbConnect');
 const tweets = require('./models/tweet');
 const users = require('./models/users');
 
-
 const express = require('express');
 const app = express();
 const mongodb = require('mongodb')
+//const functions = require('./functions/firebase-functions');
 
 
-app.use((req, res, next)=>{
-    let body=[];
-    req.on('data', (chunk)=>{
+app.use((request, response, next)=>{
+    let body=[]
+    request.on('data', (chunk)=>{
         body.push(chunk)
     })
-    req.on('end',()=>{
-       if (req.method == 'POST' || req.method == 'PUT'){
+    request.on('end',()=>{
+       if (request.method == 'POST' || request.method == 'PUT'){
             body = JSON.parse( Buffer.concat(body).toString() )
-            req.body = body
+            request.body = body
        }
 
        next();    
@@ -27,23 +27,41 @@ app.use((req, res, next)=>{
 
 
 app.route('/tweet')
-    .get((req, res)=>{
-        tweets.retrieve({})
-        .then((result)=>{
-          res.json(result);
+    .get((req, res) =>{
+        console.log(req.query.UserId)
+        console.log('mens')
+        reqQuery = JSON.parse(req.query.UserId)
+        tweets.retrieve(reqQuery)
+        .then((result) =>{
+            res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
+            res.json(result)
+            console.log(result)
         })
-
     })
     .post((req, res)=>{
-        tweets.createNew(req.body)
-        .then((result)=>{
-           res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
-           res.json(result.ops[0]);
-        })
-        
+        if(req.body.hasOwnProperty('text')){
+            tweets.createNew(req.body)
+            .then((result)=>{
+               res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
+               res.json(result.ops[0]);
+            }) 
+        }else{
+            const reqBody ={
+                likedBy: req.body.likedBy,
+                liked: req.body.liked
+             }; 
+             tweets.update({"_id": generateObjectID(req.body.postId)}, {$set:reqBody})
+             .then((result)=>{
+                 res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
+                 console.log('result!!!!')
+                 res.json(result);
+                 console.log(result)         
+            })  
+       }
+      
     })
     .delete((req, res)=>{
-        tweets.delete( {"_id": mongodb.ObjectID("59c1147a819dfa1ee461c364")} )
+        tweets.delete( {} )
         .then((result)=>{
             res.json(result);
         })
@@ -62,24 +80,27 @@ app.route('/tweet')
 app.route('/users')
    .post((req,res) => {
        if(req.body.hasOwnProperty('_id')){
-           const reqBodyId = req.body._id;
+           console.log(req.body)
+           const userId = req.body.userId;
            const reqBody ={
                          firstname: req.body.firstname,
                          lastname: req.body.lastname,
                          email: req.body.email,
                          username: req.body.username,
-                         password: req.body.password
+                         password: req.body.password,
+                         userId: req.body.userId,
+                         photoUrl:req.body.photoUrl
                       };
-                console.log(reqBodyId)
-                console.log(reqBody)
 
-
-            users.update({"_id": mongodb.ObjectID(reqBodyId)}, {$set:reqBody})
+            users.update({"userId": reqBody.userId}, {$set:reqBody})
             .then((result)=>{
                 res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
+                console.log('result!!!!')
                 res.json(result);
+                console.log(result)
             })
        }else{
+
         users.createNew(req.body)
         .then((result) => {
             res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
@@ -92,12 +113,22 @@ app.route('/users')
        
 
    .get((req, res) =>{
-       users.retrieve({})
+       console.log('oh my')
+       reqQuery = JSON.parse(req.query.UserId)
+       users.retrieve(reqQuery)
        .then((result) =>{
            res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
-           res.json(result[0])
+           res.json(result)
+           console.log(result)
        })
    })
+
+   .delete((req, res)=>{
+    users.delete( {} )
+    .then((result)=>{
+        res.json(result);
+    })
+})
 
    function generateObjectID(id){
        const objectId = mongodb.ObjectID(id)

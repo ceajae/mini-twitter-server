@@ -9,7 +9,7 @@ module.exports = function createModel (modelName, params){
         }
         save(data){
            const newDataObj = Object.assign({}, data)
-           return new Promise((resolve, reject)=>{
+           return new Promise( (resolve, reject)=>{
                dbConnect()
                .then((dbHandle)=>{
                     dbHandle.collection(modelName).insertOne(newDataObj, (err, result)=>{
@@ -25,7 +25,7 @@ module.exports = function createModel (modelName, params){
                     reject(error)
                 })
             })
-            
+
         }
 
         retrieve(filters){
@@ -39,7 +39,7 @@ module.exports = function createModel (modelName, params){
                             reject(error)
                         }else{
                             resolve(result)
-                            
+
                         }
                     })
                 })
@@ -49,9 +49,10 @@ module.exports = function createModel (modelName, params){
             })
         }
         update(filter, update){
+            console.log('pls update')
+            console.log(update)
+            console.log(filter)
             return new Promise((resolve, reject)=>{
-                console.log(filter)
-                console.log(update)
                 dbConnect()
                 .then( dbHandle=>{
                     dbHandle.collection(modelName)
@@ -69,8 +70,6 @@ module.exports = function createModel (modelName, params){
             })
         }
         delete(filters){
-            console.log('delete me!')
-            console.log(filters)
             return new Promise((resolve, reject)=>{
                 dbConnect()
                 .then( dbHandle=>{
